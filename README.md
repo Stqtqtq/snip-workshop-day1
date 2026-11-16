@@ -72,3 +72,10 @@ git push
 ```
 
 The pointer commit records the exact component revision used by this checkout.
+
+## Release bundle
+
+The `bundle` branch is generated output; do not edit it by hand. From a populated
+`main` checkout, run `node scripts/build-bundle.mjs` to build the frontend and
+assemble the deployable API, UI, and CLI. Run with `--push` to publish changed
+bundle and superproject commits.
