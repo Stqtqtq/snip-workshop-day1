@@ -1,0 +1,99 @@
+<main class="page">
+  <header class="hero">
+    <p class="eyebrow">SNIP · LINK SHORTENER</p>
+    <h1>Short links, <span>made simple.</span></h1>
+    <p class="intro">Turn a long URL into a link that’s easy to share.</p>
+  </header>
+
+  <section class="workspace" aria-labelledby="create-heading">
+    <h2 id="create-heading">Create a short link</h2>
+    <form class="link-form" [formGroup]="linkForm" (ngSubmit)="submit()">
+      <label for="url">Destination URL</label>
+      <div class="input-row">
+        <input
+          id="url"
+          type="url"
+          formControlName="url"
+          placeholder="https://example.com/your-long-link"
+          autocomplete="url"
+          [attr.aria-invalid]="urlControl.invalid && (urlControl.dirty || urlControl.touched)"
+          aria-describedby="url-hint url-error"
+        />
+        <button type="submit" [disabled]="saving() || linkForm.invalid">
+          {{ saving() ? 'Creating…' : 'Shorten URL' }}
+        </button>
+      </div>
+      <p class="field-hint" id="url-hint">Use a complete URL beginning with http:// or https://.</p>
+      @if (urlControl.invalid && (urlControl.dirty || urlControl.touched)) {
+        <p class="message error" id="url-error" role="alert">
+          @if (urlControl.hasError('required')) {
+            Enter a URL to shorten.
+          } @else {
+            Enter a valid http or https URL.
+          }
+        </p>
+      }
+    </form>
+
+    @if (submitError()) {
+      <p class="message error" role="alert">{{ submitError() }}</p>
+    }
+
+    @if (createdLink(); as link) {
+      <div class="result" role="status" aria-live="polite">
+        <span class="result-label">Your short link is ready</span>
+        <a [href]="link.shortUrl" target="_blank" rel="noopener noreferrer">{{ link.shortUrl }}</a>
+      </div>
+    }
+  </section>
+
+  <section class="workspace links-section" aria-labelledby="links-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">YOUR LINKS</p>
+        <h2 id="links-heading">Link library</h2>
+      </div>
+      <button class="refresh-button" type="button" (click)="refreshLinks()" [disabled]="loading()">
+        {{ loading() ? 'Refreshing…' : 'Refresh' }}
+      </button>
+    </div>
+
+    @if (loadError()) {
+      <p class="message error" role="alert">{{ loadError() }}</p>
+    } @else if (loading() && links().length === 0) {
+      <p class="empty-state" role="status">Loading your links…</p>
+    } @else if (links().length === 0) {
+      <p class="empty-state">No links yet. Create one above to get started.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">Your shortened links and their visit counts</caption>
+          <thead>
+            <tr>
+              <th scope="col">Short link</th>
+              <th scope="col">Original URL</th>
+              <th scope="col" class="hits-column">Hits</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (link of links(); track link.code) {
+              <tr>
+                <td>
+                  <a class="short-link" [href]="link.shortUrl" target="_blank" rel="noopener noreferrer">
+                    {{ link.code }}
+                  </a>
+                </td>
+                <td class="original-url">
+                  <a [href]="link.url" target="_blank" rel="noopener noreferrer">{{ link.url }}</a>
+                </td>
+                <td class="hits-column">{{ link.hits }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <footer>Links are stored in memory and clear when the server restarts.</footer>
+</main>
